@@ -17,7 +17,7 @@ def main():
             #print("symbol: "+command_symbol)
             binary_type02=format(command_symbol, 'b')
             length_type02=len(binary_type02)
-            for i in range(16-length_type02):
+            for _ in range(16-length_type02):
                 export += "0"
             export += binary_type02
         elif(command_type==1):
