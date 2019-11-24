@@ -7,7 +7,7 @@ C_COMMAND=1
 L_COMMAND=2
 
 class Parser:
-    def initial(self):
+    def __init__(self):
         args=sys.argv
         if(len(args)!=2):
             print("args error")
@@ -25,7 +25,7 @@ class Parser:
     def hasMoreCommands(self):
         self.line=self.file.readline()
         if(self.line):
-            self.line=self.line.strip()
+            self.line=re.sub(r'//.*',"",self.line)
             return True
 
         else:
@@ -34,8 +34,8 @@ class Parser:
     
     def advance(self):
         while(1):
-            if(self.line[:2]=="//" or self.line=='\n'):
-                self.line=self.file.readline()
+            if(self.line=='\n'):
+                self.line=re.sub(r'//.*',"",self.file.readline())
                 continue
             elif(self.line):
                 self.line=self.line.strip()
@@ -53,7 +53,7 @@ class Parser:
         if(self.commandType()==A_COMMAND):
             return self.line[1:]
         elif(self.commandType()==L_COMMAND):
-            return self.line[1:][:1]
+            return self.line[1:][:-1]
 
     def dest(self):
         if('=' in self.line):

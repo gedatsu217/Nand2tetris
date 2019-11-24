@@ -1,25 +1,57 @@
 from parser import Parser 
 from code import Code
+from symboltable import SymbolTable
 
-parser=Parser()
+
 code=Code()
+symboltable=SymbolTable()
+
 
 def main():
-    parser.initial()
+    parser0=Parser()
+    current_address=0
     while(1):
+        if not(parser0.hasMoreCommands()):
+            break
+
+        parser0.advance()
+        pre_command_type=parser0.commandType()
+        if(pre_command_type==0 or pre_command_type==1):
+            current_address+=1
+        elif(pre_command_type==2):
+            symboltable.addEntry(parser0.symbol(), current_address)
+
+    parser0.finish()
+    
+
+    parser=Parser()
+    ram_address=16
+    while(1):    
         if not(parser.hasMoreCommands()):
             break
         export=""
         parser.advance()
         command_type=parser.commandType()
-        if(command_type==0 or command_type==2):
-            command_symbol=int(parser.symbol())
-            #print("symbol: "+command_symbol)
-            binary_type02=format(command_symbol, 'b')
-            length_type02=len(binary_type02)
-            for _ in range(16-length_type02):
+        if(command_type==0):
+            command_symbol=parser.symbol()
+            if(command_symbol.isdecimal()):
+                symbol_address=int(command_symbol)
+                
+            else:
+                if(symboltable.contains(command_symbol)):
+                    symbol_address=symboltable.getAddress(command_symbol)
+                    
+                else:
+                    symboltable.addEntry(command_symbol, ram_address)
+                    symbol_address=symboltable.getAddress(command_symbol)
+                    ram_address+=1
+
+            binary=format(symbol_address, 'b')
+            length=len(binary)
+            for _ in range(16-length):
                 export += "0"
-            export += binary_type02
+            export += binary
+
         elif(command_type==1):
             command_dest=parser.dest()
             command_comp=parser.comp()
@@ -30,11 +62,10 @@ def main():
             code_jump=code.jump(command_jump)
 
             export += "111"+code_comp+code_dest+code_jump
-            
-            #print("dest: "+command_dest)
-            #print("comp: "+command_comp)
-            #print("jump: "+command_jump)
 
+        elif(command_type==2):
+            continue
+        
         parser.write(export)
 
     parser.finish()
